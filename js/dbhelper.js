@@ -27,26 +27,20 @@ class DBHelper {
       dbPromise.then((db) => {
         let tx = db.transaction('db-data', 'readwrite');
         let store = tx.objectStore('db-data');
-        //store.put(restaurants);
-        const cursor = store.openCursor(); 
-        if(cursor.value === undefined){
+        let countRequest = store.count().then(function(results) {
+         if(results < 1){
           store.add(restaurants);
-        }else{
           return tx.complete;
-        }
-      })
-      //Put the restaurants into indexed DB
+        }else{
+          return Promise.resolve();
+        }; 
+        });
+      });
       callback(null, restaurants);
     }).catch(() => {
-      dbPromise.then(db => {
-       let tx = db.transaction('db-data', 'readonly');
-       restaurants = tx.objectStore('db-data').get(1);
-       return restaurants;
-      }).then(callback(restaurants)).catch(() => {
-         const error = (`Oops!. Got an error.`);
-         callback(error, null);
-      });
-    });
+     const error = `Something went wront`;
+     callback(error, null)
+    }); 
   }
 
 //Fetch a restaurant by its ID.
