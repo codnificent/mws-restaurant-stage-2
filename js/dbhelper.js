@@ -38,8 +38,23 @@ class DBHelper {
       });
       callback(null, restaurants);
     }).catch(() => {
-     const error = `Something went wront`;
-     callback(error, null)
+      dbPromise.then((db) => {
+        let tx = db.transaction('db-data', 'readonly');
+        let store = tx.objectStore('db-data');
+        return store.openCursor();
+      }).then(function continueCursoring(cursor) {
+        if (!cursor) {
+          return;
+        }
+        if(cursor.value){
+          restaurants = cursor.value;
+          callback(null, restaurants);
+        }else{
+          const error = `Something went wront`;
+          callback(error, null)
+        };
+        return cursor.continue().then(continueCursoring);
+      });
     }); 
   }
 
